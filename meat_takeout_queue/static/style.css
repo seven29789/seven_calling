@@ -1,0 +1,39 @@
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+h1, h2, h3 {
+  margin: 10px 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #333;
+  padding: 5px 10px;
+  text-align: center;
+}
+
+button {
+  padding: 5px 10px;
+  font-size: 16px;
+  margin: 5px;
+}
+
+.monitor {
+  text-align: center;
+}
+
+.monitor .big-number {
+  font-size: 120px;
+  margin: 40px 0;
+}
+
+.monitor .history {
+  font-size: 48px;
+  margin-top: 20px;
+}

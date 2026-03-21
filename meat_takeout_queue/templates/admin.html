@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>呼び出し管理画面</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    .called {
+      background-color: #ffe6e6;
+    }
+    .flash {
+      animation: flash-bg 0.4s ease 2;
+    }
+    @keyframes flash-bg {
+      0% { background:#ffefef; }
+      100% { background:#ffffff; }
+    }
+
+    /* ===== 中央警告UI ===== */
+    #alarm-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.35);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    #alarm-modal {
+      max-width: 640px; width: 90%;
+      background: #fff6f6;
+      border: 2px solid #ff9a9a;
+      border-radius: 14px;
+      padding: 22px 24px;
+      color: #8a0000;
+      font-weight: 800;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      transform: scale(.95);
+      opacity: 0;
+      transition: transform .18s ease, opacity .18s ease;
+    }
+    #alarm-overlay.show #alarm-modal {
+      transform: scale(1);
+      opacity: 1;
+    }
+    #alarm-modal .title {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+    #alarm-modal .detail {
+      font-size: 1.15rem;
+    }
+    #alarm-modal .sub {
+      font-size: .9rem; opacity:.8; margin-top:10px;
+    }
+    #alarm-close {
+      margin-top: 14px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid #b00000;
+      background: #fff;
+      color:#b00000; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<div class="box center" style="text-align: center;">
+  <h1>呼び出し管理システム</h1>
+
+  <div class="box center" style="text-align: center;">
+    <h2>番号入力（受付 → 呼び出し → 削除）</h2>
+    <form id="top-input-form" method="POST" action="/handle">
+      番号を入力して送信:
+      <input id="top-input-number" type="number" name="number" required autofocus style="font-size: 1.5rem; width: 150px; padding: 8px;">
+      <button type="submit" style="font-size: 1.2rem; padding: 8px 16px;">送信</button>
+    </form>
+  </div>
+
+  <h2>番号リセット（全削除）</h2>
+  <form method="POST" action="/reset" onsubmit="return confirm('本当にすべての番号を削除してリセットしますか？')">
+    <button type="submit" style="color: red;">⚠ 番号を全てリセットする</button>
+  </form>
+
+  <h2>【発券済み一覧】</h2>
+  <table id="tickets-table">
+    <tr><th>番号</th><th>状況</th><th>操作</th></tr>
+    {% for ticket in data["tickets"] | sort(attribute="number") %}
+    <tr {% if ticket.status == "呼び出し" %}class="called"{% endif %}>
+      <td class="td-number">{{ ticket.number }}</td>
+      <td class="td-status">{{ ticket.status }}</td>
+      <td>
+        <!-- 状況変更 -->
+        <form method="POST" action="/handle" style="display:inline;" class="form-next">
+          <input type="hidden" name="number" value="{{ ticket.number }}">
+          <input type="hidden" name="action" value="next">
+          <button type="submit">進む</button>
+        </form>
+
+        {% if ticket.status == "呼び出し" %}
+        <form method="POST" action="/handle" style="display:inline;">
+          <input type="hidden" name="number" value="{{ ticket.number }}">
+          <input type="hidden" name="action" value="back">
+          <button type="submit">戻る</button>
+        </form>
+        {% endif %}
+
+        <form method="POST" action="/handle" style="display:inline;" onsubmit="return confirm('本当に削除しますか？');">
+          <input type="hidden" name="number" value="{{ ticket.number }}">
+          <input type="hidden" name="action" value="delete">
+          <button type="submit" style="color:red;">削除</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <p><a href="/monitor_config">ホーム画面へ戻る</a></p>
+</div>
+
+<!-- ===== 中央警告UI ===== -->
+<div id="alarm-overlay" role="dialog" aria-live="assertive" aria-label="呼び出し警告">
+  <div id="alarm-modal">
+    <div class="title">⚠ 未呼び出しがあります</div>
+    <div class="detail" id="alarm-text"></div>
+    <div class="sub">この表示は8秒後に自動で閉じます。</div>
+    <button id="alarm-close" type="button">閉じる</button>
+  </div>
+</div>
+
+<!-- 警告音（static/alarm.mp3 を必ず置く） -->
+<audio id="alarm-audio" src="/static/alarm.mp3" preload="auto"></audio>
+
+<script>
+  // ===== 中央警告UI =====
+  const overlay = document.getElementById('alarm-overlay');
+  const textEl  = document.getElementById('alarm-text');
+  const closeBt = document.getElementById('alarm-close');
+  const alarm   = document.getElementById('alarm-audio');
+  let hideTimer = null;
+
+  function showCenterAlert(html) {
+    if (hideTimer) clearTimeout(hideTimer);
+    textEl.innerHTML = html;
+    overlay.classList.add('show');
+    overlay.style.display = 'flex';
+    hideTimer = setTimeout(hideCenterAlert, 8000);
+  }
+  function hideCenterAlert() {
+    overlay.classList.remove('show');
+    setTimeout(() => { overlay.style.display = 'none'; }, 180);
+  }
+  closeBt.addEventListener('click', hideCenterAlert);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) hideCenterAlert(); });
+
+  async function pollGap() {
+    try {
+      const r = await fetch('/gap_state', { cache: 'no-store' });
+      const j = await r.json();
+      if (!j.ok) return;
+
+      if (j.playAlarm) {
+        const miss = (j.missing && j.missing.length) ? j.missing.join(', ') : '';
+        const message = miss ? `未呼び出し: <strong>${miss}</strong>` : '未呼び出しがあります';
+        showCenterAlert(message);
+
+        try {
+          alarm.muted = false;
+          alarm.volume = 1.0;
+          alarm.currentTime = 0;
+          await alarm.play();
+          console.log("警告音再生OK");
+        } catch (err) {
+          console.warn('audio.play() 失敗:', err);
+        }
+      }
+    } catch (e) {
+      console.warn('pollGap failed', e);
+    }
+  }
+  setInterval(pollGap, 2000);
+
+  // ====== ① 60秒ごとに自動更新 ======
+  // リロード前に現在のスクロール位置を保存してからリロード
+  setTimeout(() => {
+    saveScroll(); // 直前の位置を保存
+    location.reload();
+  }, 60000);
+
+  // ====== ② スクロール位置保持（送信・削除・進む・戻る後も元の位置へ） ======
+  // sessionStorageに保存（タブ毎に独立）
+  const SCROLL_KEY = 'callmgr:scroll-state';
+
+  function saveScroll(extra = {}) {
+    try {
+      const payload = {
+        y: window.scrollY,
+        t: Date.now(),
+        target: extra.target ?? null
+      };
+      sessionStorage.setItem(SCROLL_KEY, JSON.stringify(payload));
+    } catch (_) {}
+  }
+
+  function restoreScroll() {
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      // 古い保存は無視（15秒以内を有効とする）
+      if (!obj || !obj.t || Date.now() - obj.t > 15000) return;
+
+      // レンダ後に復元（複数回呼んで安全に位置決め）
+      const doScroll = () => window.scrollTo(0, obj.y || 0);
+      requestAnimationFrame(() => {
+        doScroll();
+        setTimeout(doScroll, 0);
+        setTimeout(doScroll, 60);
+        // もし対象番号があれば、その行を軽くフラッシュ
+        if (obj.target) flashRowByNumber(String(obj.target));
+      });
+    } catch (_) {}
+  }
+
+  function flashRowByNumber(numStr) {
+    const rows = document.querySelectorAll('#tickets-table tr');
+    for (const tr of rows) {
+      const td = tr.querySelector('.td-number');
+      if (!td) continue;
+      if (td.textContent.trim() === numStr) {
+        tr.classList.add('flash');
+        setTimeout(() => tr.classList.remove('flash'), 900);
+        break;
+      }
+    }
+  }
+
+  // 送信系フォームのクリック/送信前に現在位置を保存
+  function attachScrollRemember() {
+    // テーブル内の全フォーム（進む/戻る/削除）
+    document.querySelectorAll('#tickets-table form').forEach(f => {
+      const num = f.querySelector('input[name="number"]')?.value;
+      // クリック時に保存（confirmでキャンセルされても害なし）
+      f.querySelectorAll('button[type="submit"]').forEach(btn => {
+        btn.addEventListener('click', () => saveScroll({ target: num }), { passive: true });
+      });
+      // 念のため submit捕捉でも保存
+      f.addEventListener('submit', () => saveScroll({ target: num }), { capture: true });
+    });
+
+    // 上部の「番号入力フォーム」も保持
+    const topForm = document.getElementById('top-input-form');
+    if (topForm) {
+      const numInput = document.getElementById('top-input-number');
+      topForm.addEventListener('submit', () => {
+        saveScroll({ target: numInput?.value });
+      }, { capture: true });
+    }
+
+    // 「番号リセット（全削除）」フォームも位置保存
+    const resetForm = document.querySelector('form[action="/reset"]');
+    if (resetForm) {
+      resetForm.addEventListener('submit', () => saveScroll(), { capture: true });
+    }
+  }
+
+  // ページ離脱時（手動更新やナビゲーション時）にも保存しておく
+  window.addEventListener('beforeunload', () => saveScroll());
+  // ブラウザ自動復元の挙動を明示（手動で制御）
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  // 初期化
+  window.addEventListener('DOMContentLoaded', () => {
+    attachScrollRemember();
+    restoreScroll();
+  });
+</script>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ store_name }} お渡し番号モニター</title>
+  <link rel="stylesheet" href="/static/monitor.css">
+  <meta http-equiv="refresh" content="{{ reload_interval }}">
+<style>
+.big-number {
+  border: 5px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  font-size: 8rem;
+  font-weight: bold;
+  background-color: #fff;
+  display: inline-block;
+  width: 450px;        /* ← 横幅を固定（お好みで調整OK） */
+  text-align: center;  /* 中央寄せ */
+}
+/* 統計表示のラベルと値 */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.label {
+  display: block;
+  font-weight: bold;
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+
+.value {
+  font-size: 1.8rem;
+  padding: 5px 10px;
+  min-width: 80px;  /* ← 幅を狭めに調整 */
+  background: #fff;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  display: inline-block;
+}
+  /* Chrome, Safari, Edge のスピンボタンを非表示 */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox のスピンボタンを非表示 */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🍖 {{ store_name }} お渡し番号 🍖</h1>
+      <p class="subtext">店頭でもスマホでもご確認いただけます</p>
+    </header>
+
+    <main>
+      <section class="now-calling">
+        <h2>呼び出し中番号</h2>
+        <div class="big-number">{{ latest }}</div>
+      </section>
+
+      <section class="stats">
+        <div class="stat">
+          <span class="label">お待ち人数</span>
+          <span class="value">{{ wait_count }}人</span>
+        </div>
+        <div class="stat">
+          <span class="label">目安待ち時間</span>
+          <span class="value">{{ wait_count * wait_time_unit }}分</span>
+        </div>
+      </section>
+
+      <section class="history">
+        <h3>呼び出し済み番号</h3>
+        <div class="history-numbers">
+          {% for n in history %}
+            <span class="number">{{ n }}</span>
+          {% endfor %}
+        </div>
+      </section>
+
+      </main>
+
+  <br>
+  <a href="/monitor_login" style="font-size: 0.8rem;">設定画面ログイン</a>
+</footer>
+
+    <footer>
+  </div>
+</body>
+</html>

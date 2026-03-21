@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>モニター設定画面</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .box {
+      border: 2px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      background: #f9f9f9;
+    }
+    .center { text-align: center; }
+    .number-control { font-size: 1.2rem; margin: 10px 0; }
+    .number-control button {
+      font-size: 1.2rem; padding: 5px 15px; margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="box center">
+  <h1>🍖 呼び出し管理システム 🍖</h1>
+
+  <div class="box center">
+    <h2>【モニター表示の設定】</h2>
+    <form method="POST" action="/set">
+      ページ再読み込み間隔（秒）:
+      <select name="reload_interval">
+        <option value="10"  {% if data.reload_interval == 10  %}selected{% endif %}>10秒</option>
+        <option value="30"  {% if data.reload_interval == 30  %}selected{% endif %}>30秒</option>
+        <option value="60"  {% if data.reload_interval == 60  %}selected{% endif %}>60秒</option>
+        <option value="120" {% if data.reload_interval == 120 %}selected{% endif %}>120秒</option>
+      </select><br><br>
+
+      1人あたりの目安待ち時間（分）:
+      <select name="wait_time_unit">
+        <option value="1"  {% if data.wait_time_unit == 1  %}selected{% endif %}>1分</option>
+        <option value="2"  {% if data.wait_time_unit == 2  %}selected{% endif %}>2分</option>
+        <option value="3"  {% if data.wait_time_unit == 3  %}selected{% endif %}>3分</option>
+        <option value="4"  {% if data.wait_time_unit == 4  %}selected{% endif %}>4分</option> <!-- ★ デフォルト4分 -->
+        <option value="5"  {% if data.wait_time_unit == 5  %}selected{% endif %}>5分</option>
+        <option value="6"  {% if data.wait_time_unit == 6  %}selected{% endif %}>6分</option>
+        <option value="7"  {% if data.wait_time_unit == 7  %}selected{% endif %}>7分</option>
+        <option value="8"  {% if data.wait_time_unit == 8  %}selected{% endif %}>8分</option>
+        <option value="9"  {% if data.wait_time_unit == 9  %}selected{% endif %}>9分</option>
+        <option value="10" {% if data.wait_time_unit == 10 %}selected{% endif %}>10分</option>
+      </select><br><br>
+
+      <button type="submit">設定を保存</button>
+    </form>
+  </div>
+
+  <div class="box center">
+    <h2>【呼び出し表示画面:お客様側】</h2>
+    <p><a href="/monitor" target="_blank">▶ 呼び出し表示画面を開く</a></p>
+  </div>
+
+  <div class="box center">
+    <h2>【呼び出し管理画面:スタッフ側】</h2>
+    <p><a href="/管理" target="_blank">▶ 呼び出し管理画面を開く</a></p>
+  </div>
+
+  <!-- ▼ 追加：更新履歴ページへのリンク -->
+  <div class="box center">
+    <h2>【アプリ更新履歴】</h2>
+    <p><a href="/changelog" target="_blank">▶ 更新履歴を開く</a></p>
+  </div>
+
+  <footer style="text-align:center; margin-top:50px;">
+    <small>&copy; 松屋</small>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "current_number": 0,
+  "store_name": "肉の松屋",
+  "comment": "29日は肉の日",
+  "print_copies": 2,
+  "tickets": [],
+  "reload_interval": 10,
+  "wait_time_unit": 4,
+  "last_called": null,
+  "intentional_skips": [],
+  "pending_missing": [
+    7,
+    11,
+    12,
+    13,
+    15,
+    16,
+    23,
+    25,
+    26
+  ]
+}
