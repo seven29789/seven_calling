@@ -5,7 +5,7 @@ from datetime import datetime
 from threading import Lock
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_here"  # 本番ではもっと安全なキー推奨
+app.secret_key = "niku2929"  # 本番ではもっと安全なキー推奨
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
