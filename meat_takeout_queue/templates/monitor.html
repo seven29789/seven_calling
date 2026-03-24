@@ -11,24 +11,17 @@
 .big-number {
   border: 5px solid #333;
   border-radius: 12px;
+  padding: 20px;
+  font-weight: bold;
   background-color: #fff;
-  box-sizing: border-box;
+  display: inline-block;
 
-  width: min(92vw, 520px);
-  min-height: 180px;
-  padding: 10px 16px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: min(90vw, 450px);              /* ← スマホ対応 */
+  font-size: clamp(3rem, 12vw, 8rem);   /* ← 自動サイズ調整 */
 
   text-align: center;
-  line-height: 1;
-  font-weight: 700;
-  font-size: clamp(4.8rem, 22vw, 9rem);
-
-  margin: 0 auto;
-  overflow: hidden;
+  box-sizing: border-box;               /* ← はみ出し防止 */
+  aspect-ratio: 3 / 2;                  /* ← 見た目安定 */
 }
 
 /* 統計表示 */
@@ -60,19 +53,11 @@
   display: inline-block;
 }
 
-/* スマホ微調整 */
+/* スマホ微調整（さらに見やすく） */
 @media (max-width: 600px) {
-  .big-number {
-    width: 94vw;
-    min-height: 160px;
-    padding: 8px 12px;
-    font-size: clamp(5.2rem, 24vw, 7.5rem);
-  }
-
   .label {
     font-size: 1.4rem;
   }
-
   .value {
     font-size: 1.3rem;
   }
@@ -84,7 +69,6 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
 input[type=number] {
   -moz-appearance: textfield;
 }
@@ -132,5 +116,4 @@ input[type=number] {
     </footer>
   </div>
 </body>
-</html>
 </html>
