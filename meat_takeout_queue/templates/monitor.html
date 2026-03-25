@@ -4,75 +4,246 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ store_name }} お渡し番号モニター</title>
-  <link rel="stylesheet" href="/static/monitor.css">
   <meta http-equiv="refresh" content="{{ reload_interval }}">
 
-<style>
-.big-number {
-  border: 5px solid #333;
-  border-radius: 12px;
-  padding: 20px;
-  font-weight: bold;
-  background-color: #fff;
-  display: inline-block;
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-  width: min(90vw, 450px);              /* ← スマホ対応 */
-  font-size: clamp(3rem, 12vw, 8rem);   /* ← 自動サイズ調整 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #f3f1ed;
+      color: #222;
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    }
 
-  text-align: center;
-  box-sizing: border-box;               /* ← はみ出し防止 */
-  aspect-ratio: 3 / 2;                  /* ← 見た目安定 */
-}
+    body {
+      min-height: 100vh;
+    }
 
-/* 統計表示 */
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-top: 20px;
-}
+    .container {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      padding: 18px 14px 40px;
+      text-align: center;
+    }
 
-.stat {
-  text-align: center;
-}
+    header {
+      margin-bottom: 22px;
+    }
 
-.label {
-  display: block;
-  font-weight: bold;
-  font-size: 2rem;
-  margin-bottom: 5px;
-}
+    h1 {
+      margin: 0;
+      color: #b40000;
+      font-size: clamp(2rem, 5.8vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: 0.02em;
+    }
 
-.value {
-  font-size: 1.8rem;
-  padding: 5px 10px;
-  min-width: 80px;
-  background: #fff;
-  border-radius: 8px;
-  border: 2px solid #ccc;
-  display: inline-block;
-}
+    .subtext {
+      margin: 14px 0 0;
+      color: #666;
+      font-size: clamp(1rem, 2.5vw, 1.9rem);
+      line-height: 1.5;
+    }
 
-/* スマホ微調整（さらに見やすく） */
-@media (max-width: 600px) {
-  .label {
-    font-size: 1.4rem;
-  }
-  .value {
-    font-size: 1.3rem;
-  }
-}
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
 
-/* スピンボタン非表示 */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type=number] {
-  -moz-appearance: textfield;
-}
-</style>
+    .now-calling {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .now-calling h2 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.2;
+      color: #111;
+    }
+
+    .big-number {
+      width: min(92vw, 760px);
+      aspect-ratio: 3 / 2;
+      border: 6px solid #333;
+      border-radius: 22px;
+      background: #f8f8f8;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      font-weight: 900;
+      font-size: clamp(5rem, 20vw, 11rem);
+      line-height: 1;
+      color: #e10000;
+      text-align: center;
+
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .stats {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 34px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .stat {
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: clamp(1.4rem, 3.6vw, 2.3rem);
+      font-weight: 800;
+      color: #333;
+      line-height: 1.3;
+    }
+
+    .value {
+      min-width: 140px;
+      padding: 12px 16px;
+      border: 3px solid #cfcfcf;
+      border-radius: 14px;
+      background: #fff;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      line-height: 1.2;
+      color: #111;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .history {
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .history h3 {
+      margin: 0 0 16px;
+      font-size: clamp(1.8rem, 4.5vw, 3rem);
+      font-weight: 800;
+      color: #111;
+      line-height: 1.2;
+    }
+
+    .history-numbers {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      width: 100%;
+      min-height: 56px;
+    }
+
+    .number {
+      min-width: 64px;
+      padding: 10px 14px;
+      border: 3px solid #d0d0d0;
+      border-radius: 12px;
+      background: #fff;
+      font-size: clamp(1.5rem, 3.8vw, 2.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      text-align: center;
+      color: #333;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-link-wrap {
+      margin-top: 26px;
+      text-align: center;
+    }
+
+    .login-link {
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+      color: #6a38b0;
+      text-decoration: underline;
+    }
+
+    .empty-history {
+      color: #888;
+      font-size: clamp(1rem, 2.8vw, 1.3rem);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 16px 12px 28px;
+      }
+
+      header {
+        margin-bottom: 18px;
+      }
+
+      .subtext {
+        margin-top: 10px;
+      }
+
+      .now-calling h2 {
+        margin-bottom: 12px;
+      }
+
+      .big-number {
+        width: 100%;
+        max-width: 100%;
+        border-width: 5px;
+        border-radius: 18px;
+      }
+
+      .stats {
+        gap: 18px;
+      }
+
+      .stat {
+        min-width: 138px;
+      }
+
+      .value {
+        min-width: 120px;
+        padding: 10px 12px;
+      }
+
+      .history-numbers {
+        gap: 10px;
+      }
+
+      .number {
+        min-width: 56px;
+        padding: 9px 12px;
+      }
+    }
+
+    @media (min-width: 1000px) {
+      .container {
+        padding-top: 26px;
+      }
+
+      .big-number {
+        width: min(78vw, 820px);
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -102,18 +273,20 @@ input[type=number] {
       <section class="history">
         <h3>呼び出し済み番号</h3>
         <div class="history-numbers">
-          {% for n in history %}
-            <span class="number">{{ n }}</span>
-          {% endfor %}
+          {% if history %}
+            {% for n in history %}
+              <span class="number">{{ n }}</span>
+            {% endfor %}
+          {% else %}
+            <div class="empty-history">まだ呼び出し履歴はありません</div>
+          {% endif %}
         </div>
       </section>
     </main>
 
-    <br>
-    <a href="/monitor_login" style="font-size: 0.8rem;">設定画面ログイン</a>
-
-    <footer>
-    </footer>
+    <div class="login-link-wrap">
+      <a href="/monitor_login" class="login-link">設定画面ログイン</a>
+    </div>
   </div>
 </body>
 </html>
