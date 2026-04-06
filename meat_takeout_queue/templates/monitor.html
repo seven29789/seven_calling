@@ -293,7 +293,7 @@
             </div>
             <div class="stat">
               <div class="label">目安待ち時間</div>
-              <div class="value">{{ wait_count * wait_time_unit }}分</div>
+              <div class="value">{{ (wait_count if wait_count > 0 else 1) * wait_time_unit }}分</div>
             </div>
           </div>
 
